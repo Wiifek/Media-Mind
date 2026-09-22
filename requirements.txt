@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------
+# Media Mind - AI-powered Assistant - requirements.txt
+# Python 3.10+ recommended
+# ---------------------------------------------------------------
+
+# --- UI ---
+streamlit>=1.40.0
+watchdog>=4.0.0                 # faster Streamlit hot-reload (dev quality of life)
+ 
+# --- Audio ingestion (YouTube + uploads) ---
+yt-dlp                          # YouTube audio download; update often (pip install -U yt-dlp)
+pydub>=0.25.1                   # Audio file manipulation / format conversion
+ffmpeg-python>=0.2.0            # FFmpeg bindings (FFmpeg binary must be installed separately)
+
+ 
+# --- Transcription (local Whisper) ---
+openai-whisper                  # local speech-to-text; requires ffmpeg on PATH
+torch>=2.2.0                    # Whisper + sentence-transformers backend
+ 
+# --- Translation (French -> English) ---
+deep-translator>=1.11.4         # optional: drop if you use Whisper's task="translate" or Mistral for translation
+                                # (Google backend caps each request at ~5000 chars, so chunk the transcript)
+ 
+# --- LLM chain (LCEL + Mistral free API) ---
+langchain-core>=0.3.0           # LCEL: prompts, runnables, output parsers
+langchain-mistralai>=0.2.0      # ChatMistralAI
+langchain-text-splitters>=0.3.0 # chunking transcripts for summarisation and RAG
+ 
+# --- RAG (ChromaDB + HuggingFace embeddings) ---
+chromadb>=0.5.0
+langchain-chroma>=0.2.0         # maintained Chroma integration (replaces the deprecated community one)
+langchain-huggingface>=0.1.0
+sentence-transformers>=3.0.0    # e.g. all-MiniLM-L6-v2 or multilingual-e5-small
+ 
+# --- Export ---
+reportlab>=4.2.0                # PDF export; default fonts cover French accents, curly quotes, dashes
+fpdf2>=2.8.0                    # Lightweight alternative PDF library
+ 
+# --- Config / secrets ---
+python-dotenv>=1.0.0            # load MISTRAL_API_KEY from .env
+numpy>=1.26.0
+tqdm>=4.66.0                    # Progress bars
+requests>=2.32.0
