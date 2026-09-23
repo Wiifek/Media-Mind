@@ -32,8 +32,6 @@ def download_youtube_audio(url:str) -> str:
 
     return audio_file
 
-data = download_youtube_audio("https://www.youtube.com/watch?v=PmpFmclctuM")
-
 def convert_to_wav(input_file:str) -> str:
     """
     Converts any audio/video file to WAV format using pydub.
