@@ -1,4 +1,4 @@
-from langchain_mistralai import ChatMistralAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -7,22 +7,24 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-
 def get_llm():
     """
-    Initializes and returns a ChatMistralAI instance with the specified model and API key.
-
+    Initializes and returns a ChatGroq instance with the specified model and API key.
     Returns:
-        ChatMistralAI: An instance of the ChatMistralAI class.
+        ChatGroq: An instance of the ChatGroq class. 
     """
-    model_name = os.getenv("MISTRAL_MODEL", "mistral-small-latest")
-    api_key = os.getenv("MISTRAL_API_KEY")
+    model_name = os.getenv("GROQ_MODEL")
+    api_key = os.getenv("GROQ_API_KEY")
 
     if not api_key:
-        raise ValueError("MISTRAL_API_KEY is not set in the environment variables.")
+        raise ValueError("GROQ_API_KEY is not set in the environment variables.")
 
-    return ChatMistralAI(model=model_name, api_key=api_key, temperature=0.2)
-
+    return ChatGroq(
+        model=model_name,
+        api_key=api_key,
+        temperature=0.3,
+        max_retries=2,
+    )
 
 def split_transcript(transcript: str, chunk_size: int = 3000, chunk_overlap: int = 200) -> list:
     """
@@ -98,22 +100,22 @@ def generate_title(transcript: str) -> str:
         str: The generated title.
     """
     llm = get_llm()
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                "Based on the meeting transcript, generate a short professional meeting title "
+                "(max 8 words). Only return the title, nothing else.",
+            ),
+            ("human", "{text}"),
+        ]
+    )
 
     title_chain = (
         RunnablePassthrough()
         | RunnableLambda(lambda x: {"text": x})
-        | ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    "Based on the meeting transcript, generate a short professional meeting title "
-                    "(max 8 words). Only return the title, nothing else.",
-                ),
-                ("human", "{text}"),
-            ]
-        )
+        | prompt
         | llm
         | StrOutputParser()
     )
-
-    return title_chain.invoke(transcript[:2000])
+    return title_chain.invoke({ "text": transcript[:2000] })

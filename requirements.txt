@@ -24,7 +24,7 @@ deep-translator>=1.11.4         # optional: drop if you use Whisper's task="tran
 # --- LLM chain (LCEL + Mistral free API) ---
 langchain-community>=0.2.0
 langchain-core>=0.3.0           # LCEL: prompts, runnables, output parsers
-langchain-mistralai>=0.2.0      # ChatMistralAI
+langchain_groq>=0.1.0           # Mistral free API integration (Groq backend)
 langchain-text-splitters>=0.3.0 # chunking transcripts for summarisation and RAG
  
 # --- RAG (ChromaDB + HuggingFace embeddings) ---
