@@ -4,12 +4,38 @@ from core.transcriber import transcribe_all
 from core.summarize import summarize_transcript, generate_title
 from core.extractor import extract_action_items, extract_key_decisions, extract_questions
 from core.rag_engine import build_rag_chain, ask_question
+from db.repository import RecordingDB
+from db.models import RecordingRecord
 
 
 load_dotenv()
 
-def run_pipeline(source :str, translate :bool = False) -> dict:
+db = RecordingDB()
+
+
+def run_pipeline(source: str, translate: bool = False) -> dict:
     print("starting Media Mind pipeline...")
+
+    dedup_key = RecordingDB.make_key(source=source, source_name=source)
+    if translate:
+        dedup_key += "_translated"
+
+    cached = db.get(dedup_key)
+    if cached:
+        print(f"✅ Already processed — loading cached result for '{source}'")
+        # The RAG chain itself isn't stored (it's an in-memory LangChain
+        # object, not serializable data), so it's rebuilt from the cached
+        # transcript. Cheap compared to re-transcribing + re-summarizing.
+        rag_chain = build_rag_chain(cached.transcript)
+        return {
+            "title": cached.title,
+            "transcript": cached.transcript,
+            "summary": cached.summary,
+            "action_items": cached.action_items,
+            "key_decisions": cached.key_decisions,
+            "open_questions": cached.open_questions,
+            "rag_chain": rag_chain,
+        }
 
     chunks = process_input(source)
 
@@ -20,18 +46,29 @@ def run_pipeline(source :str, translate :bool = False) -> dict:
 
     summary = summarize_transcript(transcript)
 
-    action_item = extract_action_items(transcript)
+    action_items = extract_action_items(transcript)
 
     decisions = extract_key_decisions(transcript)
     questions = extract_questions(transcript)
-    
+
     rag_chain = build_rag_chain(transcript)
+
+    db.save(RecordingRecord(
+        dedup_key=dedup_key,
+        source_name=source,
+        transcript=transcript,
+        title=title,
+        summary=summary,
+        action_items=action_items,
+        key_decisions=decisions,
+        open_questions=questions,
+    ))
 
     return {
         "title": title,
         "transcript": transcript,
         "summary": summary,
-        "action_items": action_item,
+        "action_items": action_items,
         "key_decisions": decisions,
         "open_questions": questions,
         "rag_chain": rag_chain,
