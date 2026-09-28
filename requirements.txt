@@ -14,7 +14,7 @@ ffmpeg-python>=0.2.0            # FFmpeg bindings (FFmpeg binary must be install
 
  
 # --- Transcription (local Whisper) ---
-openai-whisper                  # local speech-to-text; requires ffmpeg on PATH
+groq>=0.1.0                     # Mistral free API integration (Groq backend)
 torch>=2.2.0                    # Whisper + sentence-transformers backend
  
 # --- Translation (French -> English) ---
@@ -38,7 +38,7 @@ reportlab>=4.2.0                # PDF export; default fonts cover French accents
 fpdf2>=2.8.0                    # Lightweight alternative PDF library
  
 # --- Config / secrets ---
-python-dotenv>=1.0.0            # load MISTRAL_API_KEY from .env
+python-dotenv>=1.0.0           
 numpy>=1.26.0
 tqdm>=4.66.0                    # Progress bars
 requests>=2.32.0

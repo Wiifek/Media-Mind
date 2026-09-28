@@ -13,7 +13,7 @@ load_dotenv()
 db = RecordingDB()
 
 
-def run_pipeline(source: str, translate: bool = False) -> dict:
+def run_pipeline(source: str, translate: bool = False, language: str = None) -> dict:
     print("starting Media Mind pipeline...")
 
     dedup_key = RecordingDB.make_key(source=source, source_name=source)
@@ -39,7 +39,7 @@ def run_pipeline(source: str, translate: bool = False) -> dict:
 
     chunks = process_input(source)
 
-    transcript = transcribe_all(chunks, translate)
+    transcript = transcribe_all(chunks, translate, language)
     print(f"raw transcription (first 300 characters ) {transcript[:300]}")
 
     title = generate_title(transcript)
@@ -78,7 +78,9 @@ if __name__ == "__main__":
     # CLI entry point
     source = input("Enter YouTube URL or local file path: ").strip()
     translate = input("Do you want to translate the transcription to English? (yes/no): ").strip().lower() == 'yes'
-    result = run_pipeline(source, translate)
+    if not translate:
+            language = input("Spoken language code (e.g. fr, en, ar) or press Enter to auto-detect: ").strip().lower() or None
+    result = run_pipeline(source, translate, language)
 
     print("\n" + "=" * 60)
     print(f"📌 Title: {result['title']}")

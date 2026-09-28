@@ -1,3 +1,5 @@
+import os
+
 from utils.audio_processor import process_input
 from core.transcriber import transcribe_all
 from core.summarize import summarize_transcript, generate_title
@@ -6,14 +8,20 @@ from core.extractor import extract_action_items, extract_key_decisions, extract_
 def main():
     source = input("Enter the path to the audio file or YouTube URL: ")
     translate = input("Do you want to translate the transcription to English? (yes/no): ").strip().lower() == 'yes'
+    language = None
+    if not translate:
+        language = input("Spoken language code (e.g. fr, en, ar) or press Enter to auto-detect: ").strip().lower() or None
     
     print("Processing input...")
     chunked_files = process_input(source)
+
+    for p in chunked_files:
+        print(f"  {os.path.basename(p)}: {os.path.getsize(p) / 1024 / 1024:.1f} MB")
     
     print("Transcribing audio...")
-    full_transcription = transcribe_all(chunked_files, translate)
+    full_transcription = transcribe_all(chunked_files, translate, language)
     
-    print("📝 TRANSCRIPT")
+    print("TRANSCRIPT")
     print("=" * 60)
     print(full_transcription[:500] + "..." if len(full_transcription) > 500 else full_transcription)
 
@@ -24,7 +32,7 @@ def main():
     print("\n" + "=" * 60)
     print(f"TITLE: {title}")
     print("=" * 60)
-    print("\n📋 SUMMARY")
+    print("\nSUMMARY")
     print("-" * 60)
     print(summary)
 
